@@ -139,6 +139,22 @@ impl TaskManager {
             panic!("All applications completed!");
         }
     }
+    /// get task control block
+    fn get_task_control_block(&self) -> *mut TaskControlBlock{
+        let mut inner = TASK_MANAGER.inner.exclusive_access();
+        let current_task = inner.current_task;
+        &mut inner.tasks[current_task]
+    }
+    ///update task info
+    fn update_task_info(&self, sys_call_id: usize) {
+        let mut inner = TASK_MANAGER.inner.exclusive_access();
+        let current_task = inner.current_task;
+        
+        inner.tasks[current_task].task_call_times[sys_call_id] +=1;
+        inner.tasks[current_task].task_latest_time = get_time_ms();
+    }
+
+
 }
 
 /// Run the first task in task list.
@@ -172,4 +188,14 @@ pub fn suspend_current_and_run_next() {
 pub fn exit_current_and_run_next() {
     mark_current_exited();
     run_next_task();
+}
+
+/// Get task control block
+pub fn get_task_control_block() -> *mut TaskControlBlock{
+    TASK_MANAGER.get_task_control_block()
+}
+
+/// Update task info
+pub fn update_task_info(sys_call_id: usize) {
+    TASK_MANAGER.update_task_info(sys_call_id);
 }
