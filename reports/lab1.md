@@ -7,6 +7,47 @@
   
 # 习题
 1.
+程序产生如下报错
+ ```
+[kernel] PageFault in application, bad addr = 0x0, bad instruction = 0x804003a4, kernel killed it.
+[kernel] IllegalInstruction in application, kernel killed it.
+[kernel] IllegalInstruction in application, kernel killed it.
+```
+rust sbi版本 ```[rustsbi] RustSBI version 0.3.0-alpha.2, adapting to RISC-V SBI v1.0.0```
+2.
+(1)
+刚进入 __restore 时，a0 代表了系统调用的第一个参数
+__restore 使用情景：
+- 任务切换时，恢复任务上下文信息
+- 从系统调用返回时，恢复用户态的上下文信息
+  
+(2)
+```
+ld t0, 32*8(sp)       # 加载32*8偏移处的数据到t0
+ld t1, 33*8(sp)       # 加载33*8偏移处的数据到t1
+ld t2, 2*8(sp)        # 加载2*8偏移处的数据到t2
+csrw sstatus, t0      # 将t0的值写入sstatus寄存器
+csrw sepc, t1         # 将t1的值写入sepc寄存器
+csrw sscratch, t2     # 将t2的值写入sscratch寄存器
+
+```
+(3)
+x2 已经用于指向当前保存的栈顶，因此无需在此重复加载。
+x4 通常由线程上下文的管理代码设置，恢复用户态时不需要重新加载。
+
+(4)
+通过交换 sp 和 sscratch 中的值，系统可以有效地在用户态和内核态之间切换栈指针，确保每次进入对应态时都有正确的栈指针指向。
+
+(5)
+发生在指令```sret```
+因为它在执行过程中会根据 sstatus 寄存器的 SPP 位来确定返回的特权级，并使用 sepc 中的地址作为返回点，从而切换到用户态并继续执行用户态的指令。
+
+(6)
+sp 在指令后指向内核栈地址，供内核态使用。
+sscratch 存储用户态的栈地址，以备后续返回用户态时恢复。
+
+(7)
+一般发生在系统调用和异常或者中断中，常用指令为```ecall ```
 # 荣誉准则
 
 1. 在完成本次实验的过程（含此前学习的过程）中，我曾分别与 以下各位 就（与本次实验相关的）以下方面做过交流，还在代码中对应的位置以注释形式记录了具体的交流对象及内容：
