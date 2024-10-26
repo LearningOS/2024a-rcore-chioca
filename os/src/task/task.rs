@@ -11,13 +11,12 @@ pub struct TaskControlBlock {
     pub task_status: TaskStatus,
     /// The task context
     pub task_cx: TaskContext,
-    /// The start time of the task
+    /// The start time of task
     pub task_start_time: usize,
-    /// The latest time call of the task
-    pub task_latest_time: usize,
-    /// The numbers of call of the task
-    pub task_call_times: [u32;MAX_SYSCALL_NUM],
-
+    /// The end time of task syscall
+    pub task_lastest_syscall_time: usize,
+    /// The numbers of syscall called by task
+    pub task_syscall_trace: [u32; MAX_SYSCALL_NUM],
 }
 
 /// The status of a task
